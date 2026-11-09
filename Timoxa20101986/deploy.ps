@@ -1,0 +1,26 @@
+# deploy.ps1
+$ErrorActionPreference = "Stop"
+
+$KEY = "$env:USERPROFILE\.ssh\instalead_yandex"
+$SERVER = "tim@89.169.184.150"
+$REMOTE_DIR = "/var/www/instalead"
+
+Write-Host "==> Упаковка проекта..." -ForegroundColor Cyan
+tar --exclude=node_modules --exclude=frontend\dist --exclude=backend\data\backups -czf instalead.tar.gz backend frontend extension deploy README.md package.json package-lock.json start.sh start.bat
+
+Write-Host "==> Загрузка на сервер..." -ForegroundColor Cyan
+scp -i $KEY .\instalead.tar.gz "${SERVER}:/tmp/"
+
+Write-Host "==> Установка на сервере (распаковка, зависимости, сборка, рестарт)..." -ForegroundColor Cyan
+ssh -i $KEY $SERVER @"
+set -e
+tar -xzf /tmp/instalead.tar.gz -C $REMOTE_DIR
+sudo chown -R tim:tim $REMOTE_DIR
+cd $REMOTE_DIR/backend && npm ci
+cd $REMOTE_DIR/frontend && npm ci && npm run build
+sudo systemctl restart instalead-backend
+sudo systemctl reload nginx
+sudo systemctl status instalead-backend --no-pager
+"@
+
+Write-Host "==> Готово! Сайт обновлён." -ForegroundColor Green

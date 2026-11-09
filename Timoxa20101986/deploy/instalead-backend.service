@@ -1,0 +1,18 @@
+[Unit]
+Description=Instalead backend
+After=network.target
+
+[Service]
+Type=simple
+User=instalead
+WorkingDirectory=/var/www/instalead/backend
+EnvironmentFile=/var/www/instalead/backend/.env
+# Keep user and workspace databases outside the release checkout so deployments
+# that replace /var/www/instalead cannot reset accounts.
+Environment=INSTALEAD_DATA_DIR=/var/lib/instalead/data
+ExecStart=/usr/bin/node /var/www/instalead/backend/src/index.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

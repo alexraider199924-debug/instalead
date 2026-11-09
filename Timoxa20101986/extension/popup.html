@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Instalead</title>
+  <style>
+    :root { --ink:#17171a; --muted:#777781; --line:#e7e7eb; --soft:#f6f6f8; --accent:#ff6b2c; --success:#16a05d; }
+    * { box-sizing:border-box; }
+    body { width:360px; min-height:520px; margin:0; background:#fff; color:var(--ink); font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    button,input { font:inherit; }
+    .shell { padding:28px 24px 20px; }
+    .brand { display:flex; flex-direction:column; align-items:center; padding:3px 0 24px; }
+    .logo { width:48px; height:48px; border-radius:15px; display:grid; place-items:center; color:#fff; font-size:21px; font-weight:800; background:linear-gradient(145deg,#ff8c43,#f55328); box-shadow:0 8px 18px rgba(255,107,44,.22); }
+    .brand h1 { margin:15px 0 6px; font-size:21px; letter-spacing:-.45px; }
+    .brand p { margin:0; color:var(--muted); font-size:12px; }
+    .card { border:1px solid var(--line); border-radius:15px; padding:20px; box-shadow:0 8px 25px rgba(21,21,28,.05); }
+    .label { display:block; margin:0 0 7px; font-size:12px; font-weight:600; }
+    .field { width:100%; height:42px; padding:0 12px; border:1px solid #dedee4; border-radius:9px; outline:none; background:#f7f7f8; color:var(--ink); font-size:13px; transition:.15s; }
+    .field:focus { background:#fff; border-color:#a8a8b2; box-shadow:0 0 0 3px rgba(23,23,26,.06); }
+    .field + .label { margin-top:15px; }
+    .primary { width:100%; height:42px; margin-top:16px; border:0; border-radius:9px; background:#19191c; color:#fff; font-size:13px; font-weight:700; cursor:pointer; transition:.15s; }
+    .primary:hover { background:#303035; }
+    .primary:disabled { opacity:.6; cursor:wait; }
+    .status { min-height:16px; margin-top:9px; text-align:center; color:var(--muted); font-size:11px; }
+    .status.error { color:#d43c3c; } .status.ok { color:var(--success); }
+    .account { display:flex; align-items:center; gap:12px; padding:12px 0 17px; border-bottom:1px solid var(--line); }
+    .avatar { width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#fff;border:2px solid #f04d74;font-size:16px;font-weight:700; }
+    .account-main { min-width:0; flex:1; } .account-name { font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .account-state { display:flex;align-items:center;gap:5px;margin-top:3px;color:var(--success);font-size:11px; }
+    .dot { width:7px;height:7px;border-radius:50%;background:var(--success); }
+    /* Signed-in platform identity. Deliberately quieter than the Instagram row
+       above it: it is confirmation, not the thing being acted on. */
+    .session { display:flex; align-items:center; gap:7px; margin-top:11px; padding:9px 11px; border-radius:9px; background:var(--soft); }
+    .session-dot { width:6px; height:6px; border-radius:50%; background:var(--success); flex-shrink:0; }
+    .session-email { font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .link { border:0;background:transparent;color:var(--muted);font-size:11px;cursor:pointer; } .link:hover { color:var(--ink); }
+    .link.danger { color:#c2410c; } .link.danger:hover { color:#9a3412; }
+    .open { display:block;text-align:center;text-decoration:none;padding:11px;border-radius:9px;background:var(--accent);color:#fff;font-size:13px;font-weight:700;margin:17px 0 10px; }
+    .open:hover { background:#ed5a20; }
+    .section-title { margin:20px 0 10px;font-size:10px;font-weight:700;letter-spacing:.8px;color:#96969e;text-transform:uppercase; }
+    .stats { display:grid;grid-template-columns:repeat(3,1fr);gap:8px; }
+    .stat { padding:10px 5px;text-align:center;border:1px solid var(--line);border-radius:10px;background:#fafafd; }
+    .stat b { display:block;font-size:18px; } .stat span { color:#96969e;font-size:10px; }
+    .campaign { display:flex;align-items:center;gap:8px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;margin-top:10px;color:#777781;font-size:12px; }
+    .campaign .dot { background:#c8c8d0; } .campaign.running .dot { background:var(--success); }
+    .campaign.running { color:var(--success);background:#f3fbf6;border-color:#c9ecd8; }
+    .action { width:100%;height:40px;border:0;border-radius:9px;background:var(--accent);color:#fff;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px; }
+    .log { margin-top:10px;padding:9px;border-radius:9px;background:var(--soft);color:#aaa;font:10px ui-monospace,SFMono-Regular,Consolas,monospace;max-height:46px;overflow:auto; }
+    .footer { padding:17px 0 0;text-align:center;color:#b0b0b8;font-size:10px; }
+    .hidden { display:none !important; }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="brand"><div class="logo">iL</div><h1>Sign in to Instalead</h1><p>Instagram outreach workspace</p></header>
+
+    <section id="loginView" class="card">
+      <label class="label" for="loginEmail">Email</label>
+      <input class="field" id="loginEmail" type="email" autocomplete="username" placeholder="you@example.com" />
+      <label class="label" for="loginPassword">Password</label>
+      <input class="field" id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••" />
+      <button class="primary" id="btnLogin">Sign in</button>
+      <div class="status" id="pairStatus"></div>
+    </section>
+
+    <section id="appView" class="hidden">
+      <div class="account">
+        <div class="avatar" id="avatarInner"><span id="avatarLetter">?</span></div>
+        <div class="account-main"><div class="account-name" id="accountUsername">Instagram not detected</div><div class="account-state"><i class="dot" id="igStatusDot"></i><span id="igStatusText">Open Instagram</span></div></div>
+        <button class="link" id="btnRefresh">Refresh</button>
+        <button class="link danger" id="btnLogout" title="Sign out">Sign out</button>
+      </div>
+      <div class="session"><i class="session-dot"></i><span class="session-email" id="accountEmail">Signed in</span></div>
+      <a class="open" href="https://instalead.ru" target="_blank" id="btnOpen">Open Instalead</a>
+      <div class="section-title">Campaign</div>
+      <div class="stats"><div class="stat"><b id="statSent">0</b><span>Sent</span></div><div class="stat"><b id="statFailed">0</b><span>Failed</span></div><div class="stat"><b id="statQueue">-</b><span>Queue</span></div></div>
+      <div id="campaignStatus" class="campaign"><i class="dot" id="csDot"></i><span id="csText">Idle</span></div>
+      <div class="action-wrap" id="btnRow"><button class="action" data-action="start">Start campaign</button></div>
+      <div class="log" id="logContainer"><div class="log-entry">Ready</div></div>
+    </section>
+    <footer class="footer">Instalead · v1.0.5 <button class="link" id="btnReset">Reset</button></footer>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>

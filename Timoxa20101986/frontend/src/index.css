@@ -1,0 +1,343 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------------------------------------------------------
+   Design tokens.
+
+   Every dark-mode colour in the app resolves to one of these, so the whole
+   theme can be retuned from this block instead of hunting class names across
+   pages. The dark palette is a deep blue-black rather than Tailwind's neutral
+   gray: the slight cool cast reads as deliberate on an OLED/IPS panel where
+   pure neutral gray tends to look washed out.
+
+   Surfaces step up in lightness with elevation — sidebar sits below the page,
+   cards above it, popovers above those — which is what gives depth without
+   needing heavy borders.
+   --------------------------------------------------------------------------- */
+:root {
+  --accent: #f97316;
+  --accent-hover: #ea580c;
+  --accent-ring: rgba(249, 115, 22, 0.35);
+  /* Second stop of the brand gradient. Kept as a token so the sidebar mark, the
+     primary button and focus rings can never drift apart. */
+  --accent-2: #ec4899;
+  --accent-gradient: linear-gradient(135deg, #fb923c 0%, #f97316 45%, #ec4899 100%);
+
+  /* Light theme */
+  --bg-base: #f7f8fa;
+  --bg-sidebar: #ffffff;
+  --bg-raised: #ffffff;
+  --bg-raised-2: #f2f4f7;
+  --bg-input: #ffffff;
+  --bg-hover: #eef1f5;
+
+  --border-subtle: #eceff3;
+  --border-default: #e0e4ea;
+  --border-strong: #cdd3dc;
+
+  --text-primary: #101625;
+  --text-secondary: #4a5468;
+  --text-tertiary: #6b7688;
+  --text-muted: #97a0b0;
+
+  /* Two stacked shadows rather than one: a tight contact shadow that seats the
+     card on the page, plus a wider diffuse one that gives it height. A single
+     blur reads as flat, which is most of what "unstyled" looks like. */
+  --shadow-card: 0 1px 2px rgba(16, 22, 37, 0.05), 0 4px 12px rgba(16, 22, 37, 0.06);
+  --shadow-pop: 0 4px 12px rgba(16, 22, 37, 0.08), 0 16px 40px rgba(16, 22, 37, 0.12);
+  --highlight: transparent;
+}
+
+.dark {
+  --bg-base: #0a0d13;
+  --bg-sidebar: #070a0f;
+  --bg-raised: #10151f;
+  --bg-raised-2: #161d29;
+  --bg-input: #0d121b;
+  --bg-hover: #1a2130;
+
+  --border-subtle: #151b26;
+  --border-default: #1f2735;
+  --border-strong: #2b3444;
+
+  --text-primary: #e8ecf4;
+  --text-secondary: #a6afc0;
+  --text-tertiary: #7c8695;
+  --text-muted: #5c6675;
+
+  /* A near-black surface swallows a drop shadow, so the only thing that reads as
+     elevation is a light line along the top edge. The wide dark blur does the
+     rest by darkening the gap underneath. */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.5), 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.55), 0 24px 60px rgba(0, 0, 0, 0.45);
+  --highlight: rgba(255, 255, 255, 0.05);
+}
+
+@layer base {
+  body {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    @apply antialiased;
+    /* Self-hosted variable Inter (see main.jsx). The named system faces are a
+       deliberate fallback, not decoration: if the font fails to load the layout
+       still lands on metrics close enough that nothing visibly reflows. */
+    font-family: 'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-feature-settings: 'cv11' 1, 'ss01' 1, 'cv05' 1;
+    /* Inter ships an optical-size axis; letting the browser pick it per element
+       keeps small caption text from looking oversized next to 18px headings. */
+    font-optical-sizing: auto;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Numeric columns line up only when the digits are tabular. Applied to the
+     elements that actually carry figures rather than to every heading. */
+  table, .stat-num, [data-tabular] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 6px;
+    /* Inset via a transparent border so the thumb looks slimmer than its
+       hit area — easier to grab, less visually heavy. */
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); background-clip: content-box; }
+
+  ::selection { background: var(--accent-ring); color: var(--text-primary); }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* App shell. The sidebar sits a step below the content area so the two
+     read as distinct planes instead of one flat sheet. */
+  .app-shell { background-color: var(--bg-base); }
+  .app-sidebar {
+    background-color: var(--bg-sidebar);
+    border-color: var(--border-subtle);
+  }
+
+  /* Sidebar navigation.
+     The active row is marked two ways on purpose: a tinted fill, which is easy
+     to miss when scanning a long list, and a 2px accent bar on the leading edge,
+     which the eye tracks straight down the column. Colour alone fails for the
+     same reason it fails in a tab bar — it is the weakest cue at small text
+     sizes, and it is the one signal a red-green colour deficiency removes. */
+  .nav-item {
+    @apply relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all;
+    color: var(--text-tertiary);
+  }
+  .nav-item:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+  }
+  .nav-item-active {
+    background-color: color-mix(in srgb, var(--accent) 10%, transparent);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .nav-item-active::before {
+    content: '';
+    position: absolute;
+    left: -0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 1.25rem;
+    border-radius: 0 3px 3px 0;
+    background: var(--accent);
+  }
+  .nav-item svg { flex-shrink: 0; }
+
+  .card {
+    background-color: var(--bg-raised);
+    border: 1px solid var(--border-default);
+    box-shadow: var(--shadow-card), inset 0 1px 0 var(--highlight);
+    @apply rounded-xl p-5;
+  }
+
+  .btn-primary {
+    background-color: var(--accent);
+    @apply text-white font-medium px-4 py-2 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background-color: var(--accent-hover);
+    box-shadow: 0 2px 8px var(--accent-ring), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+
+  .btn-secondary {
+    background-color: var(--bg-raised);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-default);
+    @apply font-medium px-4 py-2 rounded-lg transition-colors;
+  }
+  .btn-secondary:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+  }
+
+  .btn-danger { @apply bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-2 rounded-lg transition-colors; }
+
+  .input {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-strong);
+    color: var(--text-primary);
+    @apply rounded-lg px-3 py-2 w-full transition-colors;
+  }
+  .input::placeholder { color: var(--text-muted); }
+  .input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
+  }
+
+  .badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
+  .badge-green { @apply badge bg-green-50 text-green-700 border border-green-200; }
+  .badge-yellow { @apply badge bg-yellow-50 text-yellow-700 border border-yellow-200; }
+  .badge-red { @apply badge bg-red-50 text-red-700 border border-red-200; }
+  .badge-blue { @apply badge bg-blue-50 text-blue-700 border border-blue-200; }
+  .badge-gray { @apply badge bg-gray-100 text-gray-600 border border-gray-200; }
+  .badge-orange { @apply badge bg-orange-50 text-orange-700 border border-orange-200; }
+  .badge-purple { @apply badge bg-purple-50 text-purple-700 border border-purple-200; }
+
+  .dark .badge-green { @apply bg-green-500/10 text-green-400 border-green-500/25; }
+  .dark .badge-yellow { @apply bg-yellow-500/10 text-yellow-400 border-yellow-500/25; }
+  .dark .badge-red { @apply bg-red-500/10 text-red-400 border-red-500/25; }
+  .dark .badge-blue { @apply bg-blue-500/10 text-blue-400 border-blue-500/25; }
+  .dark .badge-orange { @apply bg-orange-500/10 text-orange-400 border-orange-500/25; }
+  .dark .badge-purple { @apply bg-purple-500/10 text-purple-400 border-purple-500/25; }
+  .dark .badge-gray {
+    background-color: var(--bg-raised-2);
+    color: var(--text-tertiary);
+    border-color: var(--border-default);
+  }
+
+  .dark select.input option { background-color: var(--bg-raised); color: var(--text-primary); }
+}
+
+/* ---------------------------------------------------------------------------
+   Dark-mode utility remapping.
+
+   Pages use Tailwind's gray scale directly (both bare `bg-white` and
+   `dark:bg-gray-800` variants). Rather than rewrite every page, the classes
+   actually in use are remapped onto the tokens above. Kept outside @layer so
+   these land after Tailwind's utilities, and marked !important so they win
+   against the generated variant rules.
+   --------------------------------------------------------------------------- */
+
+/* Surfaces */
+.dark .bg-gray-50,
+.dark .dark\:bg-gray-900 { background-color: var(--bg-base) !important; }
+.dark .bg-white,
+.dark .dark\:bg-gray-800 { background-color: var(--bg-raised) !important; }
+.dark .bg-gray-100,
+.dark .dark\:bg-gray-700 { background-color: var(--bg-raised-2) !important; }
+.dark .dark\:bg-gray-800\/50 { background-color: color-mix(in srgb, var(--bg-raised) 60%, transparent) !important; }
+.dark .dark\:bg-gray-100 { background-color: var(--bg-raised-2) !important; }
+
+/* Borders */
+.dark .border-gray-100,
+.dark .dark\:border-gray-800 { border-color: var(--border-subtle) !important; }
+.dark .border-gray-200,
+.dark .dark\:border-gray-700 { border-color: var(--border-default) !important; }
+.dark .border-gray-300,
+.dark .dark\:border-gray-600 { border-color: var(--border-strong) !important; }
+.dark .dark\:border-gray-100 { border-color: var(--border-subtle) !important; }
+
+/* Text */
+.dark .text-gray-900,
+.dark .dark\:text-gray-100,
+.dark .dark\:text-white { color: var(--text-primary) !important; }
+.dark .text-gray-800,
+.dark .dark\:text-gray-200 { color: var(--text-secondary) !important; }
+.dark .text-gray-700,
+.dark .dark\:text-gray-300 { color: var(--text-secondary) !important; }
+.dark .text-gray-600,
+.dark .dark\:text-gray-400 { color: var(--text-tertiary) !important; }
+.dark .text-gray-500,
+.dark .dark\:text-gray-500 { color: var(--text-muted) !important; }
+.dark .text-gray-400 { color: var(--text-muted) !important; }
+
+/* Hover states */
+.dark .hover\:bg-gray-50:hover,
+.dark .dark\:hover\:bg-gray-800:hover { background-color: var(--bg-hover) !important; }
+.dark .hover\:bg-gray-100:hover,
+.dark .dark\:hover\:bg-gray-700:hover { background-color: var(--bg-hover) !important; }
+.dark .dark\:hover\:bg-gray-600:hover { background-color: var(--border-strong) !important; }
+.dark .dark\:hover\:bg-gray-200:hover { background-color: var(--bg-hover) !important; }
+.dark .hover\:text-gray-700:hover,
+.dark .dark\:hover\:text-gray-200:hover,
+.dark .dark\:hover\:text-white:hover { color: var(--text-primary) !important; }
+
+/* Tinted accent surfaces — kept low-alpha so they sit on the dark base
+   without glowing. */
+.dark .bg-orange-50 { background-color: rgba(249, 115, 22, 0.10) !important; }
+.dark .bg-green-50 { background-color: rgba(34, 197, 94, 0.10) !important; }
+.dark .bg-red-50 { background-color: rgba(239, 68, 68, 0.10) !important; }
+.dark .bg-blue-50 { background-color: rgba(59, 130, 246, 0.10) !important; }
+.dark .bg-yellow-50 { background-color: rgba(234, 179, 8, 0.10) !important; }
+.dark .bg-purple-50 { background-color: rgba(139, 92, 246, 0.10) !important; }
+.dark .bg-amber-50 { background-color: rgba(245, 158, 11, 0.10) !important; }
+
+/* Dividers */
+.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: var(--border-default); }
+
+/* Tables */
+.dark table thead { background-color: var(--bg-raised-2); }
+.dark table th { color: var(--text-tertiary); }
+.dark table td { color: var(--text-secondary); }
+.dark table tbody tr:hover { background-color: var(--bg-hover); }
+.dark table tbody tr + tr { border-color: var(--border-subtle); }
+
+/* Native controls need explicit colours plus color-scheme so the browser's
+   own chrome (spinners, pickers) renders dark too. */
+.dark input[type="time"],
+.dark input[type="number"],
+.dark input[type="date"],
+.dark input[type="text"]:not(.input),
+.dark input:not([type]):not(.input),
+.dark textarea:not(.input),
+.dark select:not(.input) {
+  background-color: var(--bg-input) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-strong) !important;
+  color-scheme: dark;
+}
+.dark input[type="time"]::-webkit-calendar-picker-indicator,
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) opacity(0.6);
+}
+
+/* Checkboxes and radios are drawn by the browser, not by CSS backgrounds, so
+   the surface overrides above don't reach them. Without color-scheme: dark an
+   unchecked box renders as a bright white square that dominates a dark table.
+   accent-color tints the checked state to match the brand. */
+.dark input[type="checkbox"],
+.dark input[type="radio"] {
+  color-scheme: dark;
+  accent-color: var(--accent);
+}
+
+/* Progress bar tracks and range inputs, same reasoning. */
+.dark progress,
+.dark input[type="range"] {
+  color-scheme: dark;
+  accent-color: var(--accent);
+}
+
+/* Recharts renders its grid and axes as SVG, so they don't pick up the
+   utility overrides above. */
+.dark .recharts-cartesian-grid line { stroke: var(--border-default); }
+.dark .recharts-cartesian-axis-line,
+.dark .recharts-cartesian-axis-tick-line { stroke: var(--border-strong); }

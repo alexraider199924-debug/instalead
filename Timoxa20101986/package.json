@@ -1,0 +1,40 @@
+{
+  "name": "as-agency-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AS-Agency local desktop workspace",
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "dev": "concurrently -k -n backend,frontend,electron -c blue,green,magenta \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\" \"wait-on http://127.0.0.1:3002/health http://127.0.0.1:5173 && electron . --dev\"",
+    "setup": "npm install --prefix backend && npm install --prefix frontend && npm install",
+    "build:ui": "npm run build --prefix frontend",
+    "start:desktop": "npm run build:ui && electron .",
+    "dist:win": "npm install --prefix backend --omit=dev && npm run build:ui && electron-builder --win nsis",
+    "dist:mac": "npm install --prefix backend --omit=dev && npm run build:ui && electron-builder --mac dmg",
+    "dist:linux": "npm install --prefix backend --omit=dev && npm run build:ui && electron-builder --linux AppImage"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "com.asagency.instalead",
+    "productName": "AS-Agency Desktop",
+    "directories": { "output": "release" },
+    "files": [
+      "desktop/**/*",
+      "backend/**/*",
+      "frontend/dist/**/*",
+      "frontend/package.json",
+      "package.json"
+    ],
+    "extraMetadata": { "main": "desktop/main.cjs" },
+    "asar": true,
+    "win": { "target": ["nsis"] },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true },
+    "mac": { "target": ["dmg"] },
+    "linux": { "target": ["AppImage"] }
+  }
+}

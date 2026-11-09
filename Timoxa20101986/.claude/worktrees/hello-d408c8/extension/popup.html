@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 300px;
+      background: #0f0f13;
+      color: #e5e7eb;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #7c3aed 0%, #c026d3 100%);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header-logo { font-size: 18px; }
+    .header h1 { font-size: 15px; font-weight: 700; color: white; }
+    .header p { font-size: 10px; color: rgba(255,255,255,0.65); }
+
+    /* ── Account Card ── */
+    .account-card {
+      margin: 12px 12px 0;
+      background: #1a1a24;
+      border: 1px solid #2a2a38;
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .account-avatar {
+      width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; position: relative;
+    }
+    .account-avatar-img {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: #2a2a38;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 700; color: white;
+      overflow: hidden;
+    }
+    .account-info { flex: 1; min-width: 0; }
+    .account-username {
+      font-size: 14px; font-weight: 700; color: #fff;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .account-username.dimmed { color: #6b7280; font-weight: 400; font-size: 12px; }
+    .account-status {
+      display: flex; align-items: center; gap: 5px;
+      margin-top: 3px; font-size: 11px;
+    }
+    .status-dot {
+      width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+    }
+    .status-dot.green { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+    .status-dot.gray { background: #4b5563; }
+    .status-dot.pulse { animation: dotPulse 1.5s infinite; }
+    @keyframes dotPulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+    .status-text.green { color: #22c55e; }
+    .status-text.gray { color: #6b7280; }
+
+    /* ── Open Dashboard Button ── */
+    .btn-dashboard {
+      display: block; width: calc(100% - 24px); margin: 10px 12px 0;
+      padding: 9px 14px; border-radius: 10px; border: none; cursor: pointer;
+      background: linear-gradient(135deg, #7c3aed, #c026d3);
+      color: white; font-size: 13px; font-weight: 600;
+      text-align: center; text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .btn-dashboard:hover { opacity: 0.88; }
+
+    /* ── Divider ── */
+    .divider { border: none; border-top: 1px solid #1f2937; margin: 12px 0; }
+
+    /* ── Section ── */
+    .section { padding: 0 12px; }
+
+    /* ── API Status ── */
+    .api-status {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; color: #6b7280; margin-bottom: 10px;
+    }
+    .api-dot { width: 6px; height: 6px; border-radius: 50%; background: #ef4444; flex-shrink: 0; }
+    .api-dot.ok { background: #22c55e; }
+
+    /* ── Stats ── */
+    .stat-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    .stat {
+      flex: 1; background: #1a1a24; border: 1px solid #2a2a38;
+      border-radius: 10px; padding: 9px 6px; text-align: center;
+    }
+    .stat-val { font-size: 20px; font-weight: 700; color: #fff; }
+    .stat-lbl { font-size: 10px; color: #6b7280; margin-top: 2px; }
+
+    /* ── Running badge ── */
+    .running-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-bottom: 10px;
+    }
+    .badge-idle { background: #1f2937; color: #6b7280; }
+    .badge-running { background: rgba(34,197,94,0.12); color: #22c55e; border: 1px solid rgba(34,197,94,0.25); }
+    .badge-paused { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
+    .rdot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .rdot.pulse { animation: dotPulse 1.5s infinite; }
+
+    /* ── Current item ── */
+    .current-item {
+      background: #1a1a24; border: 1px solid #2a2a38;
+      border-radius: 10px; padding: 10px; margin-bottom: 10px; display: none;
+    }
+    .current-item.active { display: block; }
+    .ci-label { font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+    .ci-username { font-size: 13px; font-weight: 600; color: #c084fc; }
+    .ci-message { font-size: 11px; color: #9ca3af; margin-top: 5px; max-height: 40px; overflow: hidden; }
+
+    /* ── Buttons ── */
+    .btn { width: 100%; padding: 9px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.15s; }
+    .btn-start { background: linear-gradient(135deg, #7c3aed, #c026d3); color: white; }
+    .btn-start:hover { opacity: 0.9; }
+    .btn-pause { background: #1f2937; color: #9ca3af; border: 1px solid #374151; }
+    .btn-pause:hover { background: #374151; }
+    .btn-row { display: flex; gap: 6px; margin-bottom: 10px; }
+    .btn-row .btn { flex: 1; }
+
+    /* ── Log ── */
+    .log {
+      background: #0d1117; border: 1px solid #1f2937; border-radius: 8px;
+      padding: 7px; max-height: 70px; overflow-y: auto;
+      font-size: 10px; font-family: monospace; color: #6b7280;
+    }
+    .log-entry { padding: 1px 0; }
+    .log-entry.success { color: #22c55e; }
+    .log-entry.error { color: #f87171; }
+
+    /* ── Footer ── */
+    .footer {
+      display: flex; justify-content: flex-end; align-items: center;
+      padding: 0 12px 12px;
+    }
+    .btn-reset { background: none; border: none; cursor: pointer; color: #374151; font-size: 11px; }
+    .btn-reset:hover { color: #6b7280; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <span class="header-logo">🐛</span>
+    <div>
+      <h1>InstaWorm</h1>
+      <p>Instagram Outreach</p>
+    </div>
+  </div>
+
+  <!-- Account Card -->
+  <div class="account-card">
+    <div class="account-avatar">
+      <div class="account-avatar-img" id="avatarInner">
+        <span id="avatarEmoji">👤</span>
+      </div>
+    </div>
+    <div class="account-info">
+      <div class="account-username" id="accountUsername">Аккаунт не найден</div>
+      <div class="account-status">
+        <div class="status-dot gray" id="igStatusDot"></div>
+        <span class="status-text gray" id="igStatusText">Откройте Instagram в браузере</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Open Dashboard Button -->
+  <a class="btn-dashboard" href="http://localhost:5173" target="_blank">Открыть InstaWorm →</a>
+
+  <hr class="divider" />
+
+  <!-- Body section -->
+  <div class="section">
+    <!-- API Status -->
+    <div class="api-status">
+      <div class="api-dot" id="apiDot"></div>
+      <span id="apiStatus">Подключение к серверу...</span>
+    </div>
+
+    <!-- Stats -->
+    <div class="stat-row">
+      <div class="stat">
+        <div class="stat-val" id="statSent">0</div>
+        <div class="stat-lbl">Отправлено</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="statFailed">0</div>
+        <div class="stat-lbl">Ошибок</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="statQueue">—</div>
+        <div class="stat-lbl">В очереди</div>
+      </div>
+    </div>
+
+    <!-- Running Status Badge -->
+    <div id="runningBadge" class="running-badge badge-idle">
+      <div class="rdot" id="rdot"></div>
+      <span id="runningText">Ожидание</span>
+    </div>
+
+    <!-- Current Item -->
+    <div class="current-item" id="currentItem">
+      <div class="ci-label">Текущий лид</div>
+      <div class="ci-username" id="ciUsername">—</div>
+      <div class="ci-message" id="ciMessage">—</div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="btn-row" id="btnRow">
+      <button class="btn btn-start" id="btnStart" onclick="handleStart()">▶ Запустить</button>
+    </div>
+
+    <!-- Log -->
+    <div class="log" id="logContainer">
+      <div class="log-entry">Готов к работе</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <button class="btn-reset" onclick="handleReset()">Сбросить статистику</button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
